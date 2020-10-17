@@ -8,11 +8,16 @@ When hand-coding numerical systems, often one needs to construct matrix operator
 - Approximation of an integral over a set of nodes
 - Approximation of a value at a position based on values at nearby nodes
 
-These operations can be performed using matrix operators.
+### How it Works
+By inverting the vandermonde matrix for a given set of support points, we can compute the weights required to interpolate a value from the support points (i.e. solve the linear system).
 
-Using Vandermonde matrices, it is possible to generally derive these nD matrix operators. This library implements a simple algorithm to do just this, and return matrix operators for use with Eigen (C++).
+Similarly, by inverting the taylor coefficient matrix for a given set of k points, we receive a matrix of weights required to approximate all derivatives around the origin up to the k'th derivative order, to maximum accuracy.
 
-Of course, this is implemented here for regular grids.
+The quadrature approximation weights have not yet been implemented.
+
+The set of weights are then converted into matrix operators to yield the interpolation and differentiation approximations at all points based on the chosen discretization scheme.
+
+This is all implemented for regular grids with periodic boundary conditions, for simplicity reasons. The non-periodic boundary conditions can be handled by properly composing multiple periodic matrices.
 
 ## Usage
 
