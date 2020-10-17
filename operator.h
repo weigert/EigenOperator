@@ -11,13 +11,12 @@ There are three main operator types:
   - Differentiators (i.e. finite differences)
   - Integrators     (i.e. numerical quadrature) - not implemented at the moment
 
-As they are linearizations, they can be put into general matrix form after
-the individual operator weights have been computed.
+Each operator is linearized for a given set of nodes, for which weights are computed. The operator matrix is constructed from the weight set.
 
 Below are weight calculating functions for all three types of operators, as
 well as one general function for placing them into a sparse matrix system.
 
-This assumes a uniform grid structure!
+This assumes a uniform grid structure and periodic boundary condition (currently)!
 
 */
 
@@ -33,9 +32,9 @@ typedef SparseMatrix<double, RowMajor> sparse;
 typedef Array<int, 1, Dynamic> vec;
 
 /*
-===============================
-  Overloaded Helper Operators
-===============================
+================================================================================
+                        Overloaded Helper Operators
+================================================================================
 */
 
 vec operator%(const vec& rhs, const vec& lhs){
@@ -63,12 +62,12 @@ ostream& operator<<(ostream& out, const vector<T> data){
 namespace op{
 
 /*
-=============================
-    nD Space Linearization
-=============================
+================================================================================
+                          nD Space Linearization
+================================================================================
 */
 
-vec itop(int i, vec& dim){
+vec itop(int i, vec& dim){    //Convert Index to Vector
   vec n(dim.size());
   for(unsigned int j = 0; j < dim.size(); j++){
     int F = 1;
@@ -79,7 +78,7 @@ vec itop(int i, vec& dim){
   return n;
 }
 
-int ptoi(vec& pos, vec& dim){
+int ptoi(vec& pos, vec& dim){ //Convert Vector to Index
   vec w(dim.size());
   for(unsigned int i = 0; i < dim.size(); i++){
     int F = 1;
@@ -91,31 +90,27 @@ int ptoi(vec& pos, vec& dim){
 }
 
 /*
-=============================
-    Operator Construction
-=============================
+================================================================================
+                          Operator Construction
+================================================================================
 */
 
 sparse make(initializer_list<vec> _p, vector<double>& w, vec& dim){
 
-  //Assert that dim > 0
-  dim.cwiseMin(0);
-
+  dim.cwiseMin(0);      //Make sure we have dim > 0
   unsigned int SIZE = dim.prod(); //Compute total Vector Size
-  sparse M(SIZE, SIZE);
+  sparse M(SIZE, SIZE); //If dim[i] < 0, this becomes empty.
 
   vector<triplet> list; //Triplet List for Matrix Construction
   vector<vec> p = _p;   //Position Vector Extracted
 
-  for(unsigned int i = 0; i < SIZE; i++){                     //Iterate over Positions
+  for(unsigned int i = 0; i < SIZE; i++){           //Iterate over Positions
     for(unsigned int j = 0; j < p.size(); j++){     //Iterate over Nodes
 
       //Compute Position of Shifted Element, add to list with weights
       vec shift(dim.size());
       shift = (itop(i, dim) + dim + p[j]);
       shift = shift % dim;
-      std::cout<<shift<<" "<<ptoi(shift, dim)<<std::endl;
-      
       list.push_back(triplet(i, ptoi(shift, dim), w[j]));
 
     }
@@ -123,15 +118,14 @@ sparse make(initializer_list<vec> _p, vector<double>& w, vec& dim){
 
   //Construct Opeator Matrix and Return
   M.setFromTriplets(list.begin(), list.end());
-  std::cout<<M<<std::endl;
-
   return M;
+
 }
 
 /*
-=============================
-      Weight Computation
-=============================
+================================================================================
+                            Weight Computation
+================================================================================
 */
 
 //Factorial Evaluator
@@ -209,80 +203,6 @@ vector<double> FD(initializer_list<double> points, unsigned int order){
 
 /*
   To Do: Numerical Quadrature Approximator
-*/
-
-/*
-  General Sparse Operator Matrix:
-
-  Quadrature, Finite Differences and Lagrange Interpolation are all linearized forms of the mathematical integration, differentiation and interpolation operators. They are represented my matrices operating on a state vector.
-
-  Each operator has a set of weights which are computed for the relevant operator type. They matrices are then constructed from the weight sets.
-
-  We specify the nodes over which we wish to compute our approximation. Then the weights are computed and the matrix operator is constructed.
-*/
-
-/*
-Required data:
-
--> Nodes, their position in space (relative)
--> The set of weights associated with each node
--> The overall size of the domain
-*/
-
-
-
-/*
-================================================================================
-                      EXAMPLE OPERATORS FOR CONVENIENCE
-================================================================================
-*/
-
-/*
-  These individual operators can be tuned to any accuracy you like.
-*/
-
-/*
-
-//Interpolate the surface values linearly on both faces in a direction!
-SparseMatrix<double,RowMajor> FV_FLUX(vec2 dim){
-  vector<double> w = LI({-0.5, 0.5});
-  return OP({0, 1}, w, dim) -  OP({0, -1}, w, dim);
-  //vector<double> w = FD({-1, 0, 1}, 1);
-  //return OP({-1, 0, 1}, w, dim);
-}
-
-//1st Order Accurate Forward Finite Differences, Differential at Boundary for
-//both surfaces in a direction summed up!
-SparseMatrix<double,RowMajor> FV_DIFFUSION(vec2 dim){
-  vector<double> w1 = FD({0, 1}, 1);
-  vector<double> w2 = FD({0, -1}, 1);
-  return OP({0, 1}, w1, dim) -  OP({0, -1}, w2, dim);
-}
-
-//4th Order Accurate Centered Differences, Approximation of Nth order Derivative
-SparseMatrix<double,RowMajor> CFD(vec2 dim, int n){
-  vector<double> w = FD({-2, -1, 0, 1, 2}, n);
-  return OP({-2, -1, 0, 1, 2}, w, dim);
-}
-
-//Forward Finite Differences
-SparseMatrix<double,RowMajor> FFD(vec2 dim, int n){
-  vector<double> w = FD({0, 1}, n);
-  return OP({0, 1}, w, dim);
-}
-
-//Forward Finite Differences
-SparseMatrix<double,RowMajor> BFD(vec2 dim, int n){
-  vector<double> w = FD({0, 1}, n);
-  return OP({-1, 0}, w, dim);
-}
-
-//Forward Finite Differences
-SparseMatrix<double,RowMajor> SFD(vec2 dim, int n){
-  vector<double> w = FD({-1, 0, 1}, n);
-  return OP({-1, 0, 1}, w, dim);
-}
-
 */
 
 }; //End of Namespace
