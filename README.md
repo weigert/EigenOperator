@@ -8,6 +8,12 @@ When hand-coding numerical systems, often one needs to construct matrix operator
 - Approximation of an integral over a set of nodes
 - Approximation of a value at a position based on values at nearby nodes
 
+This allows for full-discretization of continuous equations, and their solution as a linear algebra problem. This is generally useful for e.g. the solution of ordinary or partial differential equations.
+
+This repository will algorithmically generate these matrix operators as a simple Eigen::SparseMatrix. It also works for arbitrary dimensions of data, by flattening the nD-Array to a 1D system and constructing the matrix appropriately.
+
+The order of approximation and the choice of support points can be arbitrary. Construction of the matrix operators is very simple and intuitive.
+
 ### How it Works
 By inverting the vandermonde matrix for a given set of support points, we can compute the weights required to interpolate a value from the support points (i.e. solve the linear system).
 
