@@ -1,5 +1,5 @@
 # EigenOperator
-Generate nD Finite Difference / Lagrange Interpolation / Quadrature Matrix Operators for Eigen, with arbitrary orders of approximation and choice of nodes.
+Single-Header n-Dimensional Differentiation / Integration / Interpolation Matrix Operators for Eigen. Arbitrary Approximation Orders, Arbitrary Support Nodes.
 
 ## What is this repository?
 
