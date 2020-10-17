@@ -17,5 +17,8 @@ Of course, this is implemented here for regular grids.
 ## How does it work?
 The entire thing is wrapped in a simple namespace that you can use to generate the matrix operators you need for your system.
 
+## ToDo
+General boundary conditions and non-periodic boundary conditions.
+
 ## License
 MIT License
