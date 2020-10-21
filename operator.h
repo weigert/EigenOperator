@@ -122,6 +122,31 @@ sparse make(initializer_list<vec> _p, vector<double>& w, vec& dim){
 
 }
 
+//Construct Matrix Mask (Templated by Mask Boolean)
+template<typename F>
+sparse mask(vec& dim, F function){
+
+  dim.cwiseMin(0);      //Make sure we have dim > 0
+  unsigned int SIZE = dim.prod(); //Compute total Vector Size
+  sparse M(SIZE, SIZE); //If dim[i] < 0, this becomes empty.
+
+  vector<triplet> list; //Triplet List for Matrix Construction
+
+  for(unsigned int i = 0; i < SIZE; i++){           //Iterate over Positions
+    vec p(dim.size());
+    p = itop(i, dim);
+
+    if(function(p))
+      list.push_back(triplet(i, i, 1));
+    else list.push_back(triplet(i, i, 0));
+  }
+
+  //Construct Mask (diagonal matrix) and Return
+  M.setFromTriplets(list.begin(), list.end());
+  return M;
+
+}
+
 /*
 ================================================================================
                             Weight Computation
