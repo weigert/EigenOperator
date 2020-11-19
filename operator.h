@@ -16,7 +16,9 @@ Each operator is linearized for a given set of nodes, for which weights are comp
 Below are weight calculating functions for all three types of operators, as
 well as one general function for placing them into a sparse matrix system.
 
-This assumes a uniform grid structure and periodic boundary condition (currently)!
+//
+
+This works for n-Dimensions so technically these are tensor operators for linearized systems.
 
 */
 
@@ -67,26 +69,27 @@ namespace op{
 ================================================================================
 */
 
-vec itop(int i, vec& dim){    //Convert Index to Vector
+vec itop(int i, vec dim){     //Convert Index to Vector
   vec n(dim.size());
   for(unsigned int j = 0; j < dim.size(); j++){
     int F = 1;
     for(unsigned int k = dim.size()-1; k > j; k--)
-      F *= dim[j];
-    n[j] = (i/F)%dim[j];
+      F *= dim(k);
+    n(j) = (int)(i/F);
+    i -= F*n(j);
   }
   return n;
 }
 
 int ptoi(vec& pos, vec& dim){ //Convert Vector to Index
-  vec w(dim.size());
-  for(unsigned int i = 0; i < dim.size(); i++){
+  int i = 0;
+  for(unsigned int j = 0; j < dim.size(); j++){
     int F = 1;
-    for(unsigned int j = dim.size()-1; j > i; j--)
-      F *= dim[j];
-    w[i] = F;
+    for(unsigned int k = dim.size()-1; k > j; k--)
+      F *= dim(k);
+    i += F*pos(j);
   }
-  return (pos*w).sum();
+  return i;
 }
 
 /*

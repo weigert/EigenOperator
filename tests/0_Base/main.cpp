@@ -9,13 +9,25 @@ int main(int argc, char* argv[]){
   vec dim1(1);  //16 grid
   dim1 << 16;
 
-  vec dim2(2);  //4 x 4 grid
-  dim2 << 4, 4;
+  vec dim2(2);  //4 x 8 grid
+  dim2 << 4, 8;
 
+  vec dim3(3);  //4 x 8 x 16 grid
+  dim3 << 4, 8, 16;
+
+  /*
   for(int i = 0; i < dim2.prod(); i++){
     vec n(dim2.size());
     n = op::itop(i, dim2);
+    std::cout<<i<<" "<<n<<" "<<op::ptoi(n, dim2)<<std::endl;
     assert(i == op::ptoi(n, dim2));
+  }
+  */
+
+  for(int i = 0; i < dim3.prod(); i++){
+    vec n(dim3.size());
+    n = op::itop(i, dim3);
+    assert(i == op::ptoi(n, dim3));
   }
 
   std::cout<<"Index Conversion Assertion Success"<<std::endl;
